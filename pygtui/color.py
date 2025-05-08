@@ -1,15 +1,18 @@
 import re
 
-from .utils.common import boundary
-from .utils.constants import NAMED_COLOR
-from .utils.seq import SeqInt
+from ._utils.common import boundary, ensure_seq
+from ._utils.constants import NAMED_COLOR
+from ._utils.error import error
+from ._utils.seq import Seq
 
-def _bound(n):
-    return boundary(int(n), 0, 255)
+__all__ = ['Color']
 
 _hex = re.compile(r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$')
 
-class Color(SeqInt):
+class Color(Seq):
+
+    def _cvrt(self, value):
+        return boundary(int(value), 0, 255)
 
     def __init__(self, *args):
         length = len(args)
@@ -22,7 +25,6 @@ class Color(SeqInt):
 
             if isinstance(color, str):
                 color = color.strip().lower()
-
                 if color in NAMED_COLOR:
                     color = NAMED_COLOR[color]
 
@@ -30,18 +32,37 @@ class Color(SeqInt):
                 if matched:
                     color = matched.group(1)
                     if len(color) == 3:
-                        self._seq = [int(color[0]*2, 16), int(color[1]*2, 16), int(color[2]*2, 16)]
+                        self._seq = [
+                            int(color[0]*2, 16),
+                            int(color[1]*2, 16),
+                            int(color[2]*2, 16)
+                        ]
                     else:
-                        self._seq = [int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16)]
+                        self._seq = [
+                            int(color[0:2], 16),
+                            int(color[2:4], 16),
+                            int(color[4:6], 16)
+                        ]
+
+                else:
+                    raise error("invalid color name")
+
+            elif isinstance(color, int):
+                if 0x000000 <= color <= 0xFFFFFF:
+                    self._seq = [
+                        (color >> 16) & 0xFF,
+                        (color >> 8) & 0xFF,
+                        color & 0xFF
+                    ]
+
+                else:
+                    raise error("invalid color argument (integer out of acceptable range)")
 
             else:
-                self._seq = [_bound(color[0]), _bound(color[1]), _bound(color[2])]
-
-        elif length == 3:
-            self._seq = [_bound(args[0]), _bound(args[1]), _bound(args[2])]
+                self._seq = ensure_seq(map(self._cvrt, color), 3)
 
         else:
-            raise ValueError('Color must be a string or a tuple of three integers')
+            self._seq = ensure_seq(map(self._cvrt, args), 3)
 
     @property
     def r(self):
@@ -56,21 +77,47 @@ class Color(SeqInt):
         return self[2]
 
     @property
-    def rgb(self):
-        return (self.r, self.g, self.b)
+    def cmy(self):
+        return (
+            1 - (self.r / 255),
+            1 - (self.g / 255),
+            1 - (self.b / 255)
+        )
+
+    @property
+    def hsv(self):
+        r, g, b = self.r / 255.0, self.g / 255.0, self.b / 255.0
+
+        Cmax = max(r, g, b)
+        Cmin = min(r, g, b)
+        delta = Cmax - Cmin
+
+        if delta == 0:
+            h = 0
+        elif Cmax == r:
+            h = (60 * ((g - b) / delta) + 360) % 360
+        elif Cmax == g:
+            h = (60 * ((b - r) / delta) + 120) % 360
+        elif Cmax == b:
+            h = (60 * ((r - g) / delta) + 240) % 360
+
+        if Cmax == 0:
+            s = 0
+        else:
+            s = delta / Cmax
+
+        v = Cmax
+
+        return h, s, v
 
     @r.setter
     def r(self, value):
-        self[0] = _bound(value)
+        self[0] = value
 
     @g.setter
     def g(self, value):
-        self[1] = _bound(value)
+        self[1] = value
 
     @b.setter
     def b(self, value):
-        self[2] = _bound(value)
-
-    @rgb.setter
-    def rgb(self, value):
-        self[0:3] = map(_bound, value)
+        self[2] = value

@@ -1,18 +1,31 @@
-from .utils.seq import SeqInt
+from ._utils.seq import Seq
+from ._utils.common import ensure_seq
 
-class Rect(SeqInt):
+from .math import Vector2
+
+class Rect(Seq):
+
+    def _cvrt(self, value):
+        return int(value)
 
     def __init__(self, *args):
         length = len(args)
 
         if length == 0:
             self._seq = [0, 0, 0, 0]
+
         elif length == 1:
-            self._seq = [int(args[0][0]), int(args[0][1]), int(args[0][2]), int(args[0][3])]
+            self._seq = ensure_seq(map(int, args[0]), 4)
+
         elif length == 2:
-            self._seq = [int(args[0][0]), int(args[0][1]), int(args[1][0]), int(args[1][1])]
-        elif length == 4:
-            self._seq = [int(args[0]), int(args[1]), int(args[2]), int(args[3])]
+            topleft, size = ensure_seq(args, 2)
+            left, top = ensure_seq(map(int, topleft), 2)
+            width, height = ensure_seq(map(int, size), 2)
+
+            self._seq = [left, top, width, height]
+
+        else:
+            self._seq = ensure_seq(map(int, args), 4)
 
     @property
     def left(self):
@@ -84,11 +97,11 @@ class Rect(SeqInt):
 
     @topleft.setter
     def topleft(self, value):
-        self[0:1] = value
+        self[0:2] = value
 
     @size.setter
     def size(self, value):
-        self[2:3] = value
+        self[2:4] = value
 
     @centerx.setter
     def centerx(self, value):
@@ -101,3 +114,25 @@ class Rect(SeqInt):
     @center.setter
     def center(self, value):
         self.centerx, self.centery = value
+
+    def contains(self, *rect):
+        rect = Rect(*rect)
+        return (
+            self.left <= rect.left and
+            self.top <= rect.top and
+            self.right >= rect.right and
+            self.bottom >= rect.bottom
+        )
+
+    def colliderect(self, *rect):
+        rect = Rect(*rect)
+        return (
+            self.left <= rect.right and
+            self.right >= rect.left and
+            self.top <= rect.bottom and
+            self.bottom >= rect.top
+        )
+
+    def collidepoint(self, *point):
+        point = Vector2(*point)
+        return self.left <= point.x <= self.right and self.top <= point.y <= self.bottom

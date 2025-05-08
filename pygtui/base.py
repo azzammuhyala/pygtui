@@ -1,23 +1,29 @@
-import time
 import sys
 
-from .utils import metadata
-from .utils.screen import clear
+from ._utils import metadata
 
 __version__ = '0.0.1'
+__all__ = [
+    'init',
+    'quit',
+    'get_init',
+    'get_error',
+    'set_error',
+    '__version__'
+]
 
 def init():
     if not metadata.INITIALIZE:
         metadata.INITIALIZE = True
-        metadata.TIME_INITIALIZE = time.time()
 
 def quit():
     if metadata.INITIALIZE:
         sys.stdout.write('\x1b[?25h')
 
-        if metadata.DISPLAY_INSTANCE:
+        if metadata.SURFACE_INSTANCE:
+            from .display import clear
             clear()
-            metadata.DISPLAY_INSTANCE = None
+            metadata.SURFACE_INSTANCE = None
         else:
             sys.stdout.flush()
 
@@ -25,3 +31,9 @@ def quit():
 
 def get_init():
     return metadata.INITIALIZE
+
+def get_error():
+    return metadata.ERROR_MESSAGE
+
+def set_error(message):
+    metadata.ERROR_MESSAGE = message

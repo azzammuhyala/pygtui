@@ -1,18 +1,22 @@
+import os
+
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
 import pygtui
 import pygame
 import keyboard
 import math
 
 # pilih modul disini (pygtui / pygame)
-pyg = pygtui
+game = pygtui
 
-pyg.init()
+game.init()
 
-pyg.display.set_caption('Cube 3D')
+game.display.set_caption('Cube 3D')
 
 running = True
-screen = pyg.display.set_mode((60, 60))
-clock = pyg.time.Clock()
+screen = game.display.set_mode((120, 60))
+clock = game.time.Clock()
 
 # Titik-titik kubus (3D)
 cube_points = [
@@ -55,16 +59,16 @@ def rotate_y(point, angle):
 def project(point):
     x, y, z = point
     z += 5  # hindari pembagian dengan nol
-    f = 80 / z
-    x_proj = int(x * f) + 30
+    f = 85 / z
+    x_proj = int(x * f) + 60
     y_proj = int(y * f) + 30
     return (x_proj, y_proj)
 
 while running:
-    if pyg is pygtui:
+    if game is pygtui:
         if keyboard.is_pressed('esc'):
             running = False
-    elif pyg is pygame:
+    elif game is pygame:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -86,10 +90,9 @@ while running:
     for edge in edges:
         start = projected_points[edge[0]]
         end = projected_points[edge[1]]
-        pyg.draw.line(screen, '#ffffff', start, end, 2)
+        game.draw.line(screen, '#ffffff', start, end)
 
-    pyg.display.flip()
-
+    game.display.flip()
     clock.tick(30)
 
-pyg.quit()
+game.quit()

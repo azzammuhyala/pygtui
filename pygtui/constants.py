@@ -1,1 +1,7 @@
+__all__ = [
+    'RESIZABLE',
+    'CONSTANT'
+]
+
 RESIZABLE = 0x00000010
+CONSTANT = 0x00000020
