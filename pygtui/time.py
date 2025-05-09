@@ -4,8 +4,15 @@ from ._utils import metadata
 
 from ._utils.common import to_milliseconds, to_seconds
 
+__all__ = [
+    'get_ticks',
+    'wait',
+    'delay',
+    'Clock'
+]
+
 def get_ticks():
-    return to_milliseconds(time.monotonic() - metadata.TIME_INITIALIZE)
+    return to_milliseconds(time.monotonic() - metadata.LOAD_TIME)
 
 def wait(milliseconds):
     time.sleep(to_seconds(milliseconds))

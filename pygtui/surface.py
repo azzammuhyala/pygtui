@@ -8,6 +8,8 @@ from .color import Color
 
 from .constants import CONSTANT
 
+__all__ = ['Surface']
+
 class Surface:
 
     __slots__ = ('_array', '_flags')
@@ -22,7 +24,7 @@ class Surface:
         self._flags = flags
 
     def __repr__(self):
-        return f'<Surface({self.width}x{self.height}x32)>'
+        return f'Surface(({self.width}, {self.height}), {self._flags})'
 
     @property
     def width(self):
@@ -43,15 +45,15 @@ class Surface:
     @array.setter
     def array(self, array):
         if not isinstance(array, np.ndarray) or array.dtype != np.uint8:
-            raise error("Surface array must be a numpy array with type uint8")
+            raise error("array must be a numpy array with type uint8")
         if len(array.shape) != 3 or array.shape[0] < 0 or array.shape[1] < 0 or array.shape[2] != 3:
             raise error("invalid resolution for Surface")
 
         oh, ow, _ = self._array.shape
-        nh, nw, _ = array.shape
+        ih, iw, _ = array.shape
 
-        if self._flags == CONSTANT and (ow != nw or oh != nh):
-            raise error("Surface array resolution must match the Surface resolution")
+        if self._flags == CONSTANT and (ow != iw or oh != ih):
+            raise error("array resolution must match the Surface resolution")
 
         self._array = array
 
@@ -66,12 +68,11 @@ class Surface:
 
         x, y = Vector2(dest)
 
-        if area is None:
-            sw, sh = source.size
-            array = source.array
-        else:
-            xc, yc, sw, sh = Rect(area)
-            array = source.array[yc:yc+sh, xc:xc+sw]
+        if area is not None:
+            source = source.subsurface(*area)
+
+        sw, sh = source.size
+        array = source.array
 
         w = min(sw, self.width - x)
         h = min(sh, self.height - y)
@@ -118,5 +119,5 @@ class Surface:
         return tuple(map(int, self.array[y, x]))
 
     def set_at(self, point, color):
-        x, y = Vector2(*point)
-        self.array[y, x] = Color(*color)
+        x, y = Vector2(point)
+        self.array[y, x] = Color(color)

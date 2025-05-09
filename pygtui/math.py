@@ -6,7 +6,14 @@ from ._utils.seq import Seq
 _vector2 = re.compile(r'(-?\d+)\s*(x|,|\ |-)\s*(-?\d+)')
 _vector3 = re.compile(r'(-?\d+)\s*(x|,|\ |-)\s*(-?\d+)\s*(x|,|\ |-)\s*(-?\d+)')
 
+__all__ = [
+    'Vector2',
+    'Vector3',
+]
+
 class Vector2(Seq):
+
+    __slots__ = ()
 
     def _cvrt(self, value):
         return int(value)
@@ -51,6 +58,8 @@ class Vector2(Seq):
         self[1] = value
 
 class Vector3(Seq):
+
+    __slots__ = ()
 
     def _cvrt(self, value):
         return int(value)

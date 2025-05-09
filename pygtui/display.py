@@ -5,12 +5,20 @@ from ._utils import metadata
 from ._utils.error import check_initialized
 from ._utils.convert import convert_array_to_ansi
 
+from .constants import CONSTANT
 from .surface import Surface
+
+__all__ = [
+    'set_mode',
+    'set_caption',
+    'clear',
+    'flip'
+]
 
 def set_mode(size, flags=0):
     check_initialized()
 
-    metadata.SURFACE_INSTANCE = Surface(size, flags)
+    metadata.SURFACE_INSTANCE = Surface(size, CONSTANT)
 
     sys.stdout.write('\x1b[?25l')
     clear()

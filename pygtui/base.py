@@ -36,4 +36,4 @@ def get_error():
     return metadata.ERROR_MESSAGE
 
 def set_error(message):
-    metadata.ERROR_MESSAGE = message
+    metadata.ERROR_MESSAGE = str(message)

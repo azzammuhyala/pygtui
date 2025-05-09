@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from operator import add, sub, mul, truediv, floordiv, pow, mod
+from operator import add, sub, mul, truediv, floordiv, pow, mod, neg
 
 from .common import name
 
@@ -18,6 +18,10 @@ class Seq(ABC):
 
     @abstractmethod
     def _cvrt(self, value):
+        pass
+
+    @abstractmethod
+    def __init__(self, *args):
         pass
 
     def __getitem__(self, index):
@@ -98,6 +102,15 @@ class Seq(ABC):
     def __imod__(self, other):
         return self % other
 
+    def __neg__(self):
+        return type(self)(map(neg, self))
+
+    def __eq__(self, other):
+        return self._seq == type(self)(other)._seq
+
+    def __ne__(self, other):
+        return not (self == other)
+
     def __contains__(self, other):
         return other in self._seq
 
@@ -107,11 +120,8 @@ class Seq(ABC):
     def __repr__(self):
         return name(self) + '(' + ', '.join(map(str, self._seq)) + ')'
 
-    def __eq__(self, other):
-        return self._seq == type(self)(other)._seq
-
-    def __ne__(self, other):
-        return not (self == other)
-
     def copy(self):
         return type(self)(self)
+
+    def update(self, *args):
+        self.__init__(*args)

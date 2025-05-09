@@ -2,18 +2,12 @@ from .math import Vector2
 from .rect import Rect
 from .color import Color
 
-# def pixel(surface, color, pos, width=1):
-#     sw, sh = surface.size
-#     array = surface.array
-#     color = Color(color)
-#     x, y = Vector2(pos)
-#     radius = width // 2
-
-#     for dy in range(-radius, radius + 1):
-#         for dx in range(-radius, radius + 1):
-#             px, py = x + dx, y + dy
-#             if 0 <= px < sw and 0 <= py < sh:
-#                 array[py, px] = color
+__all__ = [
+    'rect',
+    'line',
+    'circle',
+    'polygon'
+]
 
 def rect(surface, color, rect):
     sw, sh = surface.size
@@ -83,13 +77,15 @@ def circle(surface, color, center, radius, width=0):
     for dy in range(-radius, radius + 1):
         for dx in range(-radius, radius + 1):
             px, py = cx + dx, cy + dy
+
             if 0 <= px < sw and 0 <= py < sh:
                 distance = (dx ** 2 + dy ** 2)**0.5
+
                 if width == 0 and distance <= radius:
                     array[py, px] = color
-                elif width > 0:
-                    if radius - width / 2 <= distance <= radius + width / 2:
-                        array[py, px] = color
+
+                elif width > 0 and radius - width / 2 <= distance <= radius + width / 2:
+                    array[py, px] = color
 
 def polygon(surface, color, points, width=0):
     array = surface.array

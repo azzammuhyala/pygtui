@@ -11,6 +11,8 @@ _hex = re.compile(r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$')
 
 class Color(Seq):
 
+    __slots__ = ()
+
     def _cvrt(self, value):
         return boundary(int(value), 0, 255)
 
@@ -64,6 +66,9 @@ class Color(Seq):
         else:
             self._seq = ensure_seq(map(self._cvrt, args), 3)
 
+    def __neg__(self):
+        return type(self)(map(lambda x: 255 - x, self))
+
     @property
     def r(self):
         return self[0]
@@ -78,15 +83,40 @@ class Color(Seq):
 
     @property
     def cmy(self):
+        r, g, b = self
+
         return (
-            1 - (self.r / 255),
-            1 - (self.g / 255),
-            1 - (self.b / 255)
+            1 - (r / 255),
+            1 - (g / 255),
+            1 - (b / 255)
         )
 
     @property
+    def cmyk(self):
+        r, g, b = self
+
+        r /= 255
+        g /= 255
+        b /= 255
+
+        k = 1 - max(r, g, b)
+
+        if k == 1:
+            c = m = y = 0
+        else:
+            c = (1 - r - k) / (1 - k)
+            m = (1 - g - k) / (1 - k)
+            y = (1 - b - k) / (1 - k)
+
+        return (c, m, y, k)
+
+    @property
     def hsv(self):
-        r, g, b = self.r / 255.0, self.g / 255.0, self.b / 255.0
+        r, g, b = self
+
+        r /= 255
+        g /= 255
+        b /= 255
 
         Cmax = max(r, g, b)
         Cmin = min(r, g, b)
