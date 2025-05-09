@@ -1,5 +1,5 @@
 from ._utils.seq import Seq
-from ._utils.common import boundary, ensure_seq
+from ._utils.common import boundary
 
 from .math import Vector2
 
@@ -8,9 +8,14 @@ __all__ = ['Rect']
 class Rect(Seq):
 
     __slots__ = ()
+    _length = 4
 
-    def _cvrt(self, value):
-        return int(value)
+    @classmethod
+    def _cvrt(cls, value):
+        try:
+            return int(value)
+        except (TypeError, ValueError) as e:
+            raise TypeError("argument must be rect style object") from e
 
     def __init__(self, *args):
         length = len(args)
@@ -19,17 +24,21 @@ class Rect(Seq):
             self._seq = [0, 0, 0, 0]
 
         elif length == 1:
-            self._seq = ensure_seq(map(int, args[0]), 4)
+            arg = args[0]
+
+            if len(arg) == 2:
+                self._seq = [*map(self._cvrt, arg[0]), *map(self._cvrt, arg[1])]
+            else:
+                self._seq = list(map(self._cvrt, arg))
 
         elif length == 2:
-            topleft, size = ensure_seq(args, 2)
-            left, top = ensure_seq(map(int, topleft), 2)
-            width, height = ensure_seq(map(int, size), 2)
-
-            self._seq = [left, top, width, height]
+            self._seq = [*map(self._cvrt, args[0]), *map(self._cvrt, args[1])]
 
         else:
-            self._seq = ensure_seq(map(int, args), 4)
+            self._seq = list(map(self._cvrt, args))
+
+        if len(self._seq) != self._length:
+            raise TypeError("argument must be rect style object")
 
     @property
     def left(self):
@@ -272,12 +281,7 @@ class Rect(Seq):
             w = h2 * inner_ratio
             h = h2
 
-        return type(self)(
-            x2 + (w2 - w) / 2,
-            y2 + (h2 - h) / 2,
-            w,
-            h
-        )
+        return type(self)(x2 + (w2 - w) / 2, y2 + (h2 - h) / 2, w, h)
 
     def normalize(self):
         x, y, w, h = self

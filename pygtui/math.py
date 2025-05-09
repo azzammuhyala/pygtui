@@ -1,45 +1,54 @@
 import re
 
-from ._utils.common import ensure_seq
+from ._utils.error import error
 from ._utils.seq import Seq
 
-_vector2 = re.compile(r'(-?\d+)\s*(x|,|\ |-)\s*(-?\d+)')
-_vector3 = re.compile(r'(-?\d+)\s*(x|,|\ |-)\s*(-?\d+)\s*(x|,|\ |-)\s*(-?\d+)')
-
 __all__ = [
+    'Vector',
     'Vector2',
     'Vector3',
 ]
 
-class Vector2(Seq):
+class Vector(Seq):
 
     __slots__ = ()
 
     def _cvrt(self, value):
         return int(value)
 
+    def __init_subclass__(cls, length):
+        super().__init_subclass__()
+        cls._length = length
+        cls._regex = re.compile(r'\s*(x|,|-|\ )\s*'.join(r'(-?\d+)' for _ in range(length)))
+
     def __init__(self, *args):
         length = len(args)
 
         if length == 0:
-            self._seq = [0, 0]
+            self._seq = [0] * self._length
 
         elif length == 1:
-            vector = args[0]
+            arg = args[0]
 
-            if isinstance(vector, str):
-                matched = _vector2.match(vector)
+            if isinstance(arg, str):
+                matched = self._regex.match(arg)
                 if matched:
-                    self._seq = [
-                        int(matched.group(1)),
-                        int(matched.group(3))
-                    ]
+                    self._seq = [self._cvrt(matched.group(i)) for i in range(1, self._length * 2 + 1, 2)]
+                else:
+                    raise error
 
             else:
-                self._seq = ensure_seq(map(int, vector), 2)
+                self._seq = list(map(self._cvrt, arg))
 
         else:
-            self._seq = ensure_seq(map(int, args), 2)
+            self._seq = list(map(self._cvrt, args))
+
+        if len(self._seq) != self._length:
+            raise error
+
+class Vector2(Vector, length=2):
+
+    __slots__ = ()
 
     @property
     def x(self):
@@ -57,36 +66,9 @@ class Vector2(Seq):
     def y(self, value):
         self[1] = value
 
-class Vector3(Seq):
+class Vector3(Vector, length=3):
 
     __slots__ = ()
-
-    def _cvrt(self, value):
-        return int(value)
-
-    def __init__(self, *args):
-        length = len(args)
-
-        if length == 0:
-            self._seq = [0, 0, 0]
-
-        elif length == 1:
-            vector = args[0]
-
-            if isinstance(vector, str):
-                matched = _vector3.match(vector)
-                if matched:
-                    self._seq = [
-                        int(matched.group(1)),
-                        int(matched.group(3)),
-                        int(matched.group(5))
-                    ]
-
-            else:
-                self._seq = ensure_seq(map(int, vector), 3)
-
-        else:
-            self._seq = ensure_seq(map(int, args), 3)
 
     @property
     def x(self):

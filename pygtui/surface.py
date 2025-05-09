@@ -24,7 +24,7 @@ class Surface:
         self._flags = flags
 
     def __repr__(self):
-        return f'Surface(({self.width}, {self.height}), {self._flags})'
+        return f'Surface({self.size}, {self._flags})'
 
     @property
     def width(self):

@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from operator import add, sub, mul, truediv, floordiv, pow, mod, neg
 
-from .common import name
-
 def op(self, other, func):
     return type(self)(
         func(a, b)
@@ -14,10 +12,19 @@ def op(self, other, func):
 
 class Seq(ABC):
 
+    """
+    Base class of sequence elements.
+
+    The length of this class sequence is constant that mean cannot add or delete elements.
+    """
+
     __slots__ = ('_seq',)
 
+    _length = None
+
+    @classmethod
     @abstractmethod
-    def _cvrt(self, value):
+    def _cvrt(cls, value):
         pass
 
     @abstractmethod
@@ -30,6 +37,8 @@ class Seq(ABC):
     def __setitem__(self, index, value):
         if isinstance(index, slice):
             self._seq[index] = map(self._cvrt, value)
+            if len(self._seq) != self._length:
+                raise TypeError("length changed")
         else:
             self._seq[index] = self._cvrt(value)
 
@@ -109,7 +118,7 @@ class Seq(ABC):
         return self._seq == type(self)(other)._seq
 
     def __ne__(self, other):
-        return not (self == other)
+        return self._seq != type(self)(other)._seq
 
     def __contains__(self, other):
         return other in self._seq
@@ -118,7 +127,7 @@ class Seq(ABC):
         return reversed(self._seq)
 
     def __repr__(self):
-        return name(self) + '(' + ', '.join(map(str, self._seq)) + ')'
+        return type(self).__name__ + '(' + ', '.join(map(str, self._seq)) + ')'
 
     def copy(self):
         return type(self)(self)
