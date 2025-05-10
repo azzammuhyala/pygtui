@@ -1,13 +1,10 @@
-import os
-
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
 import pygtui
 import pygame
 import keyboard
 import math
 
-# pilih modul disini (pygtui / pygame)
+# pilih model modul disini (pygtui / pygame)
 game = pygtui
 
 game.init()
@@ -65,17 +62,22 @@ def project(point):
     return (x_proj, y_proj)
 
 while running:
+    clock.tick(24)
+
     if game is pygtui:
+        # event untuk pygtui (menggunakan keyboard)
         if keyboard.is_pressed('esc'):
             running = False
+
     elif game is pygame:
+        # event untuk pygame
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
     screen.fill('#000000')
 
-    angle_x += 0.01
+    angle_x += 0.02
     angle_y += 0.02
 
     # Proyeksi semua titik ke 2D
@@ -83,16 +85,18 @@ while running:
     for point in cube_points:
         rotated = rotate_x(point, angle_x)
         rotated = rotate_y(rotated, angle_y)
-        projected = project(rotated)
-        projected_points.append(projected)
+        projected_points.append(project(rotated))
 
     # Gambar sisi-sisi
     for edge in edges:
-        start = projected_points[edge[0]]
-        end = projected_points[edge[1]]
-        game.draw.line(screen, '#ffffff', start, end)
+        game.draw.line(
+            screen,
+            '#ffffff',
+            projected_points[edge[0]],
+            projected_points[edge[1]],
+            2
+        )
 
     game.display.flip()
-    clock.tick(30)
 
 game.quit()
