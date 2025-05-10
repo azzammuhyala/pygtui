@@ -5,40 +5,25 @@ from .math import Vector2
 
 __all__ = ['Rect']
 
-class Rect(Seq):
+class Rect(Seq, length=4):
 
     __slots__ = ()
-    _length = 4
-
-    @classmethod
-    def _cvrt(cls, value):
-        try:
-            return int(value)
-        except (TypeError, ValueError) as e:
-            raise TypeError("argument must be rect style object") from e
 
     def __init__(self, *args):
         length = len(args)
 
-        if length == 0:
-            self._seq = [0, 0, 0, 0]
-
-        elif length == 1:
+        if length == 1:
             arg = args[0]
 
             if len(arg) == 2:
-                self._seq = [*map(self._cvrt, arg[0]), *map(self._cvrt, arg[1])]
-            else:
-                self._seq = list(map(self._cvrt, arg))
+                args = (*arg[0], *arg[1])
+            elif not isinstance(arg, str):
+                args = arg
 
         elif length == 2:
-            self._seq = [*map(self._cvrt, args[0]), *map(self._cvrt, args[1])]
+            args = (*args[0], *args[1])
 
-        else:
-            self._seq = list(map(self._cvrt, args))
-
-        if len(self._seq) != self._length:
-            raise TypeError("argument must be rect style object")
+        super().__init__(*args)
 
     @property
     def left(self):

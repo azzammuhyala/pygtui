@@ -1,5 +1,6 @@
-from abc import ABC, abstractmethod
 from operator import add, sub, mul, truediv, floordiv, pow, mod, neg
+
+import re
 
 def op(self, other, func):
     return type(self)(
@@ -10,7 +11,7 @@ def op(self, other, func):
         )
     )
 
-class Seq(ABC):
+class Seq:
 
     """
     Base class of sequence elements.
@@ -20,27 +21,69 @@ class Seq(ABC):
 
     __slots__ = ('_seq',)
 
-    _length = None
-
     @classmethod
-    @abstractmethod
-    def _cvrt(cls, value):
-        pass
+    def _convert(cls, value):
+        try:
+            return cls._type(value)
+        except BaseException as e:
+            raise cls._error from e
 
-    @abstractmethod
+    def __init_subclass__(
+            cls,
+            length,
+            type=int,
+            rsep=r'\s*(x|X|,|\ )\s*',
+            rvalue=r'(-?\d+)',
+            default=0,
+            **kwargs
+        ):
+        super().__init_subclass__(**kwargs)
+
+        cls._length = length
+        cls._type = staticmethod(type)
+        cls._default = default
+        cls._error = TypeError(f"argument must be {cls.__name__} style object")
+        cls._regex = re.compile(rsep.join(rvalue for _ in range(length)))
+
     def __init__(self, *args):
-        pass
+        if type(self) is Seq:
+            raise TypeError("Seq is an abstract class and cannot be instantiated directly")
+
+        length = len(args)
+
+        if length == 0:
+            seq = [self._default] * self._length
+
+        elif length == 1:
+            arg = args[0]
+
+            if isinstance(arg, str):
+                matched = self._regex.match(arg)
+                if not matched:
+                    raise self._error
+                seq = [self._convert(matched.group(i)) for i in range(1, self._length * 2 + 1, 2)]
+
+            else:
+                seq = list(map(self._convert, arg))
+
+        else:
+            seq = list(map(self._convert, args))
+
+        if len(seq) != self._length:
+            raise self._error
+
+        self._seq = seq
 
     def __getitem__(self, index):
         return self._seq[index]
 
     def __setitem__(self, index, value):
         if isinstance(index, slice):
-            self._seq[index] = map(self._cvrt, value)
+            self._seq[index] = map(self._convert, value)
             if len(self._seq) != self._length:
-                raise TypeError("length changed")
+                raise self._error
         else:
-            self._seq[index] = self._cvrt(value)
+            self._seq[index] = self._convert(value)
 
     def __iter__(self):
         return iter(self._seq)

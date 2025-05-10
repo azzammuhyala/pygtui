@@ -15,8 +15,8 @@ from . import (
 
 from .base import *
 from .constants import *
-from .color import Color as Color
-from .math import Vector as Vector, Vector2 as Vector2, Vector3 as Vector3
+# from .color import Color as Color
+# from .math import Vector as Vector, Vector2 as Vector2, Vector3 as Vector3
 from .rect import Rect as Rect
 from .surface import Surface as Surface
 

@@ -2,90 +2,80 @@ import re
 
 from ._utils.common import boundary
 from ._utils.constants import NAMED_COLOR
-from ._utils.error import error
 from ._utils.seq import Seq
-
-from .math import Vector
 
 __all__ = ['Color']
 
 _hex = re.compile(r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$')
+_rvalue_float = r'(-?(?:\d+\.\d+|\.\d+|\d+))'
 
-class _FloatVector3(Vector, length=3):
-
-    __slots__ = ()
-
-    def _cvrt(self, value):
-        return float(value)
-
-class _FloatVector4(Vector, length=4):
-
-    __slots__ = ()
-
-    def _cvrt(self, value):
-        return float(value)
-
-class Color(Seq):
+class _FloatVector3(
+        Seq,
+        length=3,
+        type=float,
+        rvalue=_rvalue_float,
+        default=0.0
+    ):
 
     __slots__ = ()
 
-    @classmethod
-    def _cvrt(cls, value):
-        value = int(value)
-        return boundary(255 + value if value < 0 else value, 0, 255)
+class _FloatVector4(
+        Seq,
+        length=4,
+        type=float,
+        rvalue=_rvalue_float,
+        default=0.0
+    ):
+
+    __slots__ = ()
+
+def _type_color(value):
+    value = int(value)
+    return boundary(255 + value if value < 0 else value, 0, 255)
+
+class Color(
+        Seq,
+        length=3,
+        type=_type_color
+    ):
+
+    __slots__ = ()
 
     def __init__(self, *args):
-        length = len(args)
+        if len(args) == 1:
+            arg = args[0]
 
-        if length == 0:
-            self._seq = [0, 0, 0]
+            if isinstance(arg, str):
+                arg = arg.strip().lower()
 
-        elif length == 1:
-            color = args[0]
+                if arg in NAMED_COLOR:
+                    arg = NAMED_COLOR[arg]
 
-            if isinstance(color, str):
-                color = color.strip().lower()
-                if color in NAMED_COLOR:
-                    color = NAMED_COLOR[color]
+                matched = _hex.match(arg)
 
-                matched = _hex.match(color)
                 if matched:
-                    color = matched.group(1)
-                    if len(color) == 3:
-                        self._seq = [
-                            int(color[0]*2, 16),
-                            int(color[1]*2, 16),
-                            int(color[2]*2, 16)
-                        ]
+                    arg = matched.group(1)
+                    if len(arg) == 3:
+                        args = (
+                            int(arg[0]*2, 16),
+                            int(arg[1]*2, 16),
+                            int(arg[2]*2, 16)
+                        )
                     else:
-                        self._seq = [
-                            int(color[0:2], 16),
-                            int(color[2:4], 16),
-                            int(color[4:6], 16)
-                        ]
+                        args = (
+                            int(arg[0:2], 16),
+                            int(arg[2:4], 16),
+                            int(arg[4:6], 16)
+                        )
 
-                else:
-                    raise error("invalid color name")
+            elif isinstance(arg, int) and 0x000000 <= arg <= 0xFFFFFF:
+                args = (
+                    (arg >> 16) & 0xFF,
+                    (arg >> 8) & 0xFF,
+                    arg & 0xFF
+                )
 
-            elif isinstance(color, int):
-                if 0x000000 <= color <= 0xFFFFFF:
-                    self._seq = [
-                        (color >> 16) & 0xFF,
-                        (color >> 8) & 0xFF,
-                        color & 0xFF
-                    ]
-
-                else:
-                    raise error("invalid color argument (integer out of acceptable range)")
-
-            else:
-                self._seq = list(map(self._cvrt, color))
-
-        else:
-            self._seq = list(map(self._cvrt, args))
-
-        if len(self._seq) != 3:
-            raise error("invalid color (color sequence must have size 3 or 4, and each element must be an integer in the range [0, 255])")
+        super().__init__(*args)
 
     @property
     def r(self):
@@ -101,17 +91,13 @@ class Color(Seq):
 
     @property
     def cmy(self):
-        r, g, b = self
+        r, g, b = self.normalized
 
-        return (1 - (r / 255), 1 - (g / 255), 1 - (b / 255))
+        return (1 - r, 1 - g, 1 - b)
 
     @property
     def cmyk(self):
-        r, g, b = self
-
-        r /= 255
-        g /= 255
-        b /= 255
+        r, g, b = self.normalized
 
         k = 1 - max(r, g, b)
 
@@ -126,11 +112,7 @@ class Color(Seq):
 
     @property
     def hsv(self):
-        r, g, b = self
-
-        r /= 255
-        g /= 255
-        b /= 255
+        r, g, b = self.normalized
 
         cmax = max(r, g, b)
         cmin = min(r, g, b)
@@ -149,11 +131,7 @@ class Color(Seq):
 
     @property
     def hsl(self):
-        r, g, b = self
-
-        r /= 255
-        g /= 255
-        b /= 255
+        r, g, b = self.normalized
 
         cmax = max(r, g, b)
         cmin = min(r, g, b)
@@ -187,6 +165,8 @@ class Color(Seq):
     def normalized(self):
         r, g, b = self
 
+        return (r / 255, g / 255, b / 255)
+
     @r.setter
     def r(self, value):
         self[0] = value
@@ -199,6 +179,31 @@ class Color(Seq):
     def b(self, value):
         self[2] = value
 
+    @cmy.setter
+    def cmy(self, value):
+        pass
+
+    @cmyk.setter
+    def cmyk(self, value):
+        pass
+
+    @hsv.setter
+    def hsv(self, value):
+        pass
+
+    @hsl.setter
+    def hsl(self, value):
+        pass
+
+    @i1i2i3.setter
+    def i1i2i3(self, value):
+        pass
+
+    @normalized.setter
+    def normalized(self, value):
+        pass
+
+    # all returns new Color
     @classmethod
     def from_cmy(cls, *object):
         c, m, y = _FloatVector3(*object)
@@ -219,6 +224,14 @@ class Color(Seq):
     def from_i1i2i3(cls, *object):
         i1, i2, i3 = _FloatVector3(*object)
 
+    @classmethod
+    def from_normalize(cls, *object):
+        r, g, b = _FloatVector3(*object)
+
+    def normalize(self):
+        return self.normalized
+
     def grayscale(self):
         r, g, b = self
-        return int(round(0.2989 * r + 0.5870 * g + 0.1140 * b))
+        gray = int(round(0.2989 * r + 0.5870 * g + 0.1140 * b))
+        return Color(gray, gray, gray)
