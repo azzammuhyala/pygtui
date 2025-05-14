@@ -6,3 +6,12 @@ def to_milliseconds(seconds):
 
 def to_seconds(miliseconds):
     return miliseconds / 1000
+
+def to_bytes(value):
+    if isinstance(value, bytes):
+        return value
+    elif isinstance(value, str):
+        return value.encode()
+    elif isinstance(value, bytearray):
+        return bytes(value)
+    return None

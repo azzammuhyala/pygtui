@@ -13,11 +13,11 @@ def rect(surface, color, rect):
     sw, sh = surface.size
     l, t, w, h = Rect(rect)
 
-    surface.array[max(t,0):min(t+h,sh), max(l,0):min(l+w,sw)] = Color(color)
+    surface._array[max(t,0):min(t+h,sh), max(l,0):min(l+w,sw)] = Color(color)
 
 def line(surface, color, start_pos, end_pos, width=1):
     sw, sh = surface.size
-    array = surface.array
+    array = surface._array
     color = Color(color)
     x1, y1 = Vector2(start_pos)
     x2, y2 = Vector2(end_pos)
@@ -70,7 +70,7 @@ def line(surface, color, start_pos, end_pos, width=1):
 
 def circle(surface, color, center, radius, width=0):
     sw, sh = surface.size
-    array = surface.array
+    array = surface._array
     color = Color(color)
     cx, cy = Vector2(center)
 
@@ -88,7 +88,7 @@ def circle(surface, color, center, radius, width=0):
                     array[py, px] = color
 
 def polygon(surface, color, points, width=0):
-    array = surface.array
+    array = surface._array
     color = Color(color)
     points = [Vector2(point) for point in points]
 

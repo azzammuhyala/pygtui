@@ -51,7 +51,7 @@ def flip():
 
     if surface:
         sys.stdout.write('\x1b[H')
-        sys.stdout.write(convert_array_to_ansi(surface.array))
+        sys.stdout.write(convert_array_to_ansi(surface._array))
         sys.stdout.flush()
 
 def update(*rects):
@@ -78,7 +78,7 @@ def update(*rects):
 
         for rect in map(Rect, rects):
             x, y, w, h = rect
-            screen[y:y+h, x:x+w, :3] = surface.array[y:y+h, x:x+w]
+            screen[y:y+h, x:x+w, :3] = surface._array[y:y+h, x:x+w]
             screen[y:y+h, x:x+w, 3] = 1
 
         sys.stdout.write('\x1b[H')

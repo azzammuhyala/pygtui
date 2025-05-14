@@ -4,19 +4,28 @@ def convert_array_to_ansi(array):
 
     if channel == 3:
         for y in range(0, height, 2):
+            col = ''
+
             if y + 1 < height:
-                lines.append(''.join(f'\x1b[38;2;{";".join(map(str, array[y, x]))}m\x1b[48;2;{";".join(map(str, array[y + 1, x]))}m\u2580' for x in range(width)))
+                for x in range(width):
+                    tr, tg, tb = array[y, x]
+                    br, bg, bb = array[y + 1, x]
+                    col += f'\x1b[38;2;{tr};{tg};{tb}m\x1b[48;2;{br};{bg};{bb}m\u2580'
+
             else:
-                lines.append(''.join(f'\x1b[38;2;{";".join(map(str, array[y, x]))}m\u2580' for x in range(width)))
+                for x in range(width):
+                    tr, tg, tb = array[y, x]
+                    col += f'\x1b[38;2;{tr};{tg};{tb}m\u2580'
+
+            lines.append(col)
 
     elif channel == 4:
-        # alpha works only in the range of values ​​0 and 1
+        # NOTE: alpha only has values ​​0 and 1
 
         for y in range(0, height, 2):
+            col = ''
 
             if y + 1 < height:
-                col = ''
-
                 for x in range(width):
                     tr, tg, tb, ta = array[y, x]
                     br, bg, bb, ba = array[y + 1, x]
@@ -29,11 +38,7 @@ def convert_array_to_ansi(array):
                     else:
                         col += '\x1b[0m '
 
-                lines.append(col)
-
             else:
-                col = ''
-
                 for x in range(width):
                     tr, tg, tb, ta = array[y, x]
                     if ta:
@@ -41,6 +46,6 @@ def convert_array_to_ansi(array):
                     else:
                         col += '\x1b[0m '
 
-                lines.append(col)
+            lines.append(col)
 
     return '\x1b[0m\n'.join(lines) + '\x1b[0m'
