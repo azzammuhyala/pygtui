@@ -5,6 +5,8 @@ MODULE_NAME = 'pygtui'
 LOAD_TIME = time.monotonic()
 
 INITIALIZE = False
+
 SURFACE_INSTANCE = None
+CLOCK_INSTANCE = None
 
 ERROR_MESSAGE = ''

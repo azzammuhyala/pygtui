@@ -2,42 +2,32 @@ import re
 
 from ._utils.common import boundary
 from ._utils.constants import NAMED_COLOR
-from ._utils.seq import Seq
+from ._utils.sequence import Seq
 
-__all__ = ['Color']
+__all__ = [
+    'Color'
+]
 
 _hex = re.compile(r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$')
 _rvalue_float = r'(-?(?:\d+\.\d+|\.\d+|\d+))'
 
-class _FloatVector3(
-        Seq,
-        length=3,
-        type=float,
-        rvalue=_rvalue_float,
-        default=0.0
-    ):
-
+class _FloatVector3(Seq, length=3,
+                         type=float,
+                         rvalue=_rvalue_float,
+                         default=0.0):
     __slots__ = ()
 
-class _FloatVector4(
-        Seq,
-        length=4,
-        type=float,
-        rvalue=_rvalue_float,
-        default=0.0
-    ):
-
+class _FloatVector4(Seq, length=4,
+                         type=float,
+                         rvalue=_rvalue_float,
+                         default=0.0):
     __slots__ = ()
 
 def _type_color(value):
     value = int(value)
     return boundary(255 + value if value < 0 else value, 0, 255)
 
-class Color(
-        Seq,
-        length=3,
-        type=_type_color
-    ):
+class Color(Seq, length=3, type=_type_color):
 
     __slots__ = ()
 
@@ -181,57 +171,128 @@ class Color(
 
     @cmy.setter
     def cmy(self, value):
-        pass
+        c, m, y = _FloatVector3(value)
+
+        self.r = (1 - c) * 255
+        self.g = (1 - m) * 255
+        self.b = (1 - y) * 255
 
     @cmyk.setter
     def cmyk(self, value):
-        pass
+        c, m, y, k = _FloatVector4(value)
+
+        self.r = (1 - c) * (1 - k) * 255
+        self.g = (1 - m) * (1 - k) * 255
+        self.b = (1 - y) * (1 - k) * 255
 
     @hsv.setter
     def hsv(self, value):
-        pass
+        h, s, v = _FloatVector3(value)
+
+        h = h / 60
+        c = v * s
+        x = c * (1 - abs((h % 2) - 1))
+        m = v - c
+
+        if 0 <= h < 1:
+            r, g, b = c, x, 0
+        elif 1 <= h < 2:
+            r, g, b = x, c, 0
+        elif 2 <= h < 3:
+            r, g, b = 0, c, x
+        elif 3 <= h < 4:
+            r, g, b = 0, x, c
+        elif 4 <= h < 5:
+            r, g, b = x, 0, c
+        else:
+            r, g, b = c, 0, x
+
+        self.r = (r + m) * 255
+        self.g = (g + m) * 255
+        self.b = (b + m) * 255
 
     @hsl.setter
     def hsl(self, value):
-        pass
+        h, s, l = _FloatVector3(value)
+
+        h = h / 60
+        c = (1 - abs(2 * l - 1)) * s
+        x = c * (1 - abs((h % 2) - 1))
+        m = l - c / 2
+
+        if 0 <= h < 1:
+            r, g, b = c, x, 0
+        elif 1 <= h < 2:
+            r, g, b = x, c, 0
+        elif 2 <= h < 3:
+            r, g, b = 0, c, x
+        elif 3 <= h < 4:
+            r, g, b = 0, x, c
+        elif 4 <= h < 5:
+            r, g, b = x, 0, c
+        else:
+            r, g, b = c, 0, x
+
+        self.r = (r + m) * 255
+        self.g = (g + m) * 255
+        self.b = (b + m) * 255
 
     @i1i2i3.setter
     def i1i2i3(self, value):
-        pass
+        i1, i2, i3 = _FloatVector3(value)
+
+        self.r = boundary(255, 0, round(i1 + (2/3) * i2 - (1/3) * i3))
+        self.g = boundary(255, 0, round(i1 - (1/3) * i2 + (2/3) * i3))
+        self.b = boundary(255, 0, round(i1 - (2/3) * i2 - (1/3) * i3))
 
     @normalized.setter
     def normalized(self, value):
-        pass
+        r, g, b = _FloatVector3(value)
 
-    # all returns new Color
+        self.r = r * 255
+        self.g = g * 255
+        self.b = b * 255
+
     @classmethod
     def from_cmy(cls, *object):
-        c, m, y = _FloatVector3(*object)
+        color = cls()
+        color.cmy = _FloatVector3(*object)
+        return color
 
     @classmethod
     def from_cmyk(cls, *object):
-        c, m, y, k = _FloatVector4(*object)
+        color = cls()
+        color.cmyk = _FloatVector4(*object)
+        return color
 
     @classmethod
     def from_hsv(cls, *object):
-        h, s, v = _FloatVector3(*object)
+        color = cls()
+        color.hsv = _FloatVector3(*object)
+        return color
 
     @classmethod
     def from_hsl(cls, *object):
-        h, s, l = _FloatVector3(*object)
+        color = cls()
+        color.hsl = _FloatVector3(*object)
+        return color
 
     @classmethod
     def from_i1i2i3(cls, *object):
-        i1, i2, i3 = _FloatVector3(*object)
+        color = cls()
+        color.i1i2i3 = _FloatVector3(*object)
+        return color
 
     @classmethod
     def from_normalize(cls, *object):
-        r, g, b = _FloatVector3(*object)
+        color = cls()
+        color.normalized = _FloatVector3(*object)
+        return color
 
     def normalize(self):
         return self.normalized
 
     def grayscale(self):
         r, g, b = self
-        gray = int(round(0.2989 * r + 0.5870 * g + 0.1140 * b))
+        gray = round(0.2989 * r + 0.5870 * g + 0.1140 * b)
         return Color(gray, gray, gray)

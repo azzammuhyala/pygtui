@@ -8,7 +8,9 @@ from .color import Color
 
 from .constants import CONSTANT
 
-__all__ = ['Surface']
+__all__ = [
+    'Surface'
+]
 
 class Surface:
 
@@ -25,6 +27,9 @@ class Surface:
 
     def __repr__(self):
         return f'Surface({self.size}, {self._flags})'
+
+    def __array__(self):
+        return self._array.copy()
 
     @property
     def width(self):
@@ -49,10 +54,7 @@ class Surface:
         if len(array.shape) != 3 or array.shape[0] < 0 or array.shape[1] < 0 or array.shape[2] != 3:
             raise error("invalid resolution for Surface")
 
-        oh, ow, _ = self._array.shape
-        ih, iw, _ = array.shape
-
-        if self._flags == CONSTANT and (ow != iw or oh != ih):
+        if self._flags == CONSTANT and self._array.shape != array.shape:
             raise error("array resolution must match the Surface resolution")
 
         self._array = array
@@ -109,10 +111,7 @@ class Surface:
         return self._flags
 
     def get_rect(self, **kwargs):
-        rect = Rect(0, 0, self.width, self.height)
-        for key, value in kwargs.items():
-            setattr(rect, key, value)
-        return rect
+        return Rect(0, 0, self.width, self.height).move_to(**kwargs)
 
     def get_at(self, *point):
         x, y = Vector2(*point)

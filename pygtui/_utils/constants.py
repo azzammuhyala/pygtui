@@ -1,4 +1,4 @@
-# data from: https://github.com/MyreMylar/pygame_gui/blob/main/pygame_gui/_constants.py
+# source from: https://github.com/MyreMylar/pygame_gui/blob/main/pygame_gui/_constants.py
 NAMED_COLOR = {
     'aliceblue': '#f0f8ff',
     'antiquewhite': '#faebd7',

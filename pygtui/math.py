@@ -1,4 +1,4 @@
-from ._utils.seq import Seq
+from ._utils.sequence import Seq
 
 __all__ = [
     'Vector2',

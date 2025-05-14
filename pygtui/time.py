@@ -1,3 +1,5 @@
+from typing import final
+
 import time
 
 from ._utils import metadata
@@ -8,6 +10,7 @@ __all__ = [
     'get_ticks',
     'wait',
     'delay',
+    'set_timer',
     'Clock'
 ]
 
@@ -17,18 +20,26 @@ def get_ticks():
 def wait(milliseconds):
     time.sleep(to_seconds(milliseconds))
 
-# same as wait()
 def delay(milliseconds):
     time.sleep(to_seconds(milliseconds))
 
-# code from: https://pypi.org/project/pygclock
+def set_timer(event, millis, loops=0):
+    pass
+
+# source from: https://pypi.org/project/pygclock
+@final
 class Clock:
 
-    def __init__(self):
-        self._last_tick = time.monotonic()
-        self._time_elapsed = 0.0
-        self._fps = 0.0
-        self._raw_time = 0.0
+    def __new__(cls):
+        if metadata.CLOCK_INSTANCE is None:
+            metadata.CLOCK_INSTANCE = super(Clock, cls).__new__(cls)
+
+            metadata.CLOCK_INSTANCE._last_tick = time.monotonic()
+            metadata.CLOCK_INSTANCE._time_elapsed = 0.0
+            metadata.CLOCK_INSTANCE._fps = 0.0
+            metadata.CLOCK_INSTANCE._raw_time = 0.0
+
+        return metadata.CLOCK_INSTANCE
 
     def tick(self, framerate):
         current_time = time.monotonic()

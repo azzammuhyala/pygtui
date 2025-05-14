@@ -1,9 +1,11 @@
-from ._utils.seq import Seq
 from ._utils.common import boundary
+from ._utils.sequence import Seq
 
 from .math import Vector2
 
-__all__ = ['Rect']
+__all__ = [
+    'Rect'
+]
 
 class Rect(Seq, length=4):
 
@@ -14,11 +16,8 @@ class Rect(Seq, length=4):
 
         if length == 1:
             arg = args[0]
-
             if len(arg) == 2:
                 args = (*arg[0], *arg[1])
-            elif not isinstance(arg, str):
-                args = arg
 
         elif length == 2:
             args = (*args[0], *args[1])
@@ -202,27 +201,28 @@ class Rect(Seq, length=4):
         self.width, self.height = value
 
     def move(self, *point):
-        x1, y1, w1, h1 = self
-        x, y = Vector2(*point)
+        new = self.copy()
+        new.move_ip(*point)
+        return new
 
-        return type(self)(x1 + x, y1 + y, w1, h1)
+    def move_to(self, **kwargs):
+        new = self.copy()
+        for key, value in kwargs.items():
+            setattr(new, key, value)
+        return new
 
     def inflate(self, *point):
-        x1, y1, w1, h1 = self
-        x, y = Vector2(*point)
+        new = self.copy()
+        new.inflate_ip(*point)
+        return new
 
-        return type(self)(x1 - x / 2, y1 - y / 2, w1 + x, h1 + y)
+    def scale_by(self, *point):
+        return self.inflate(*point) # alias for scale_by
 
     def clamp(self, *rect):
-        x1, y1, w1, h1 = self
-        x2, y2, w2, h2 = type(self)(*rect)
-
-        return type(self)(
-            boundary(x1, x2, x2 + w2 - w1),
-            boundary(y1, y2, y2 + h2 - h1),
-            w1,
-            h1
-        )
+        new = self.copy()
+        new.clamp_ip(*rect)
+        return new
 
     def clip(self, *rect):
         x1, y1, w1, h1 = self
@@ -239,18 +239,9 @@ class Rect(Seq, length=4):
         return type(self)(x, y, xw - x, yh - y)
 
     def union(self, *rect):
-        x1, y1, w1, h1 = self
-        x2, y2, w2, h2 = type(self)(*rect)
-
-        x = min(x1, x2)
-        y = min(y1, y2)
-
-        return type(self)(
-            x,
-            y,
-            max(x1 + w1, x2 + w2) - x,
-            max(y1 + h1, y2 + h2) - y
-        )
+        new = self.copy()
+        new.union_ip(*rect)
+        return new
 
     def fit(self, *rect):
         x1, y1, w1, h1 = self
@@ -267,6 +258,42 @@ class Rect(Seq, length=4):
             h = h2
 
         return type(self)(x2 + (w2 - w) / 2, y2 + (h2 - h) / 2, w, h)
+
+    def move_ip(self, *point):
+        x, y = Vector2(*point)
+
+        self.left += x
+        self.top += y
+
+    def inflate_ip(self, *point):
+        x, y = Vector2(*point)
+
+        self.left -= x / 2
+        self.top -= y / 2
+        self.width += x
+        self.height += y
+
+    def scale_by_ip(self, *point):
+        self.inflate_ip(*point) # alias for scale_by_ip
+
+    def clamp_ip(self, *rect):
+        x1, y1, w1, h1 = self
+        x2, y2, w2, h2 = type(self)(*rect)
+
+        self.left = boundary(x1, x2, x2 + w2 - w1)
+        self.top = boundary(y1, y2, y2 + h2 - h1)
+
+    def union_ip(self, *rect):
+        x1, y1, w1, h1 = self
+        x2, y2, w2, h2 = type(self)(*rect)
+
+        x = min(x1, x2)
+        y = min(y1, y2)
+
+        self.left = x
+        self.top = y
+        self.width = max(x1 + w1, x2 + w2) - x
+        self.height = max(y1 + h1, y2 + h2) - y
 
     def normalize(self):
         x, y, w, h = self

@@ -1,9 +1,6 @@
 def boundary(n, nmin, nmax):
     return max(nmin, min(n, nmax))
 
-def name(obj):
-    return type(obj).__name__
-
 def to_milliseconds(seconds):
     return int(seconds * 1000)
 
