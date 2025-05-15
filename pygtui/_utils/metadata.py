@@ -1,12 +1,27 @@
 import time
-
-MODULE_NAME = 'pygtui'
+import os
 
 LOAD_TIME = time.monotonic()
 
-INITIALIZE = False
+MODULE_FILE = os.path.sep.join(os.path.abspath(__file__).split(os.path.sep)[:-2])
+MODULE_NAME = os.path.basename(MODULE_FILE)
+MODULES = [
+    os.path.splitext(s)[0]
+    for s in os.listdir(MODULE_FILE)
+    if os.path.isfile(os.path.join(MODULE_FILE, s)) and s.endswith('.py') and not s.startswith('_')
+]
 
-SURFACE_INSTANCE = None
-CLOCK_INSTANCE = None
+# main
+INITIALIZE = False
+# submain
+INITIALIZE_DISPLAY = False
+INITIALIZE_FONT = False
+
+QUIT_CALLABLE = None
+
+WINDOW_SURFACE = None
 
 ERROR_MESSAGE = ''
+
+CAPTION = ''
+ICON_TITLE = None

@@ -4,7 +4,7 @@ import time
 
 from ._utils import metadata
 
-from ._utils.common import to_milliseconds, to_seconds
+from ._utils.common import to_milliseconds, to_seconds, Singleton
 
 __all__ = [
     'get_ticks',
@@ -28,18 +28,11 @@ def set_timer(event, millis, loops=0):
 
 # source from: https://pypi.org/project/pygclock
 @final
-class Clock:
-
-    def __new__(cls):
-        if metadata.CLOCK_INSTANCE is None:
-            metadata.CLOCK_INSTANCE = super(Clock, cls).__new__(cls)
-
-            metadata.CLOCK_INSTANCE._last_tick = time.monotonic()
-            metadata.CLOCK_INSTANCE._time_elapsed = 0.0
-            metadata.CLOCK_INSTANCE._fps = 0.0
-            metadata.CLOCK_INSTANCE._raw_time = 0.0
-
-        return metadata.CLOCK_INSTANCE
+class Clock(Singleton):
+    _last_tick = 0.0
+    _time_elapsed = 0.0
+    _fps = 0.0
+    _raw_time = 0.0
 
     def tick(self, framerate):
         current_time = time.monotonic()

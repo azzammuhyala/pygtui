@@ -15,3 +15,10 @@ def to_bytes(value):
     elif isinstance(value, bytearray):
         return bytes(value)
     return None
+
+_singleton_instances = {}
+class Singleton:
+    def __new__(cls, *args, **kwargs):
+        if cls not in _singleton_instances:
+            _singleton_instances[cls] = super().__new__(cls)
+        return _singleton_instances[cls]

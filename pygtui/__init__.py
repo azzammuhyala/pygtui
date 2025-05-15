@@ -26,4 +26,5 @@ from .math import Vector2 as Vector2, Vector3 as Vector3
 from .rect import Rect as Rect
 from .surface import Surface as Surface
 
+# this module is not available in pygame
 from ._utils.convert import convert_array_to_ansi as convert_array_to_ansi
