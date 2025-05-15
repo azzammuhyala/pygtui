@@ -14,8 +14,6 @@ Setelah semua modul eksternal sudah terinstall tanpa masalah, unduh folder `pygt
 file zipnya jika file dalam bentuk file zip.
 
 # Uji dan Pemakaian
-Setelah semua itu coba unduh file `cube.py` (perlu juga modul eksternal pygame atau hapus kata kunci `import pygame`)
-dan jalankan file `cube.py`.<br>
-Hasilnya akan seperti pada cuplikan gambar ini:<br>
+Setelah semua itu coba unduh file `cube.py` dan jalankan file `cube.py`. Hasilnya akan seperti pada cuplikan gambar ini:<br>
 ![Hasil Output `cube.py`](image.png)
 > Catatan: Jalankan `cube.py` ini minimal di ukuran terminal 120x30 agar tampilan tidak rusak.
