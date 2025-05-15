@@ -217,7 +217,7 @@ class Rect(Seq, length=4):
         return new
 
     def scale_by(self, *point):
-        return self.inflate(*point) # alias for scale_by
+        return self.inflate(*point) # alias
 
     def clamp(self, *rect):
         new = self.copy()
@@ -274,7 +274,7 @@ class Rect(Seq, length=4):
         self.height += y
 
     def scale_by_ip(self, *point):
-        self.inflate_ip(*point) # alias for scale_by_ip
+        self.inflate_ip(*point) # alias
 
     def clamp_ip(self, *rect):
         x1, y1, w1, h1 = self

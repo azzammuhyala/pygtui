@@ -1,13 +1,9 @@
 import numpy as np
 
-from ._utils.error import error
-
 from .bufferproxy import BufferProxy
 from .rect import Rect
 from .math import Vector2
 from .color import Color
-
-from .constants import CONSTANT
 
 __all__ = [
     'Surface'
@@ -21,11 +17,10 @@ class Surface:
         w, h = Vector2(size)
 
         if w < 0 or h < 0:
-            raise error("invalid resolution for Surface")
+            raise ValueError("invalid resolution for Surface")
 
         self._array = np.zeros((h, w, 3), dtype=np.uint8)
         self._flags = flags
-
         self._buffer = BufferProxy(self)
 
     def __repr__(self):

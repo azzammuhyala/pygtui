@@ -66,7 +66,4 @@ class BufferProxy:
             raise IndexError("'offset' is out of range")
 
         raw[offset:offset + len(buffer)] = buffer
-        self._parent._array = np.frombuffer(raw, dtype=np.uint8,
-                                                 count=self.length).reshape((self._parent.height,
-                                                                             self._parent.width,
-                                                                             3))
+        self._parent._array = np.frombuffer(raw, dtype=np.uint8).reshape((self._parent.height, self._parent.width, 3))

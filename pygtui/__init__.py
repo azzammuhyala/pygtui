@@ -27,4 +27,3 @@ from .rect import Rect as Rect
 from .surface import Surface as Surface
 
 from ._utils.convert import convert_array_to_ansi as convert_array_to_ansi
-from ._utils.error import error as error

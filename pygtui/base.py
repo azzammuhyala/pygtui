@@ -4,6 +4,7 @@ from ._utils import metadata
 
 __version__ = '0.0.1'
 __all__ = [
+    'error',
     'init',
     'quit',
     'get_init',
@@ -12,20 +13,21 @@ __all__ = [
     '__version__'
 ]
 
+class error(RuntimeError):
+    __module__ = metadata.MODULE_NAME
+
 def init():
     if not metadata.INITIALIZE:
         metadata.INITIALIZE = True
 
 def quit():
     if metadata.INITIALIZE:
-        sys.stdout.write('\x1b[?25h')
 
         if metadata.SURFACE_INSTANCE:
-            from .display import clear
-            clear()
-            metadata.SURFACE_INSTANCE = None
-        else:
+            sys.stdout.write('\x1b[2J\x1b[H\x1b[?25h')
             sys.stdout.flush()
+
+            metadata.SURFACE_INSTANCE = None
 
         metadata.INITIALIZE = False
 

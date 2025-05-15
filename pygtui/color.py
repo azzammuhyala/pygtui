@@ -23,11 +23,11 @@ class _FloatVector4(Seq, length=4,
                          default=0.0):
     __slots__ = ()
 
-def _type_color(value):
+def _to_rgb(value):
     value = int(value)
     return boundary(255 + value if value < 0 else value, 0, 255)
 
-class Color(Seq, length=3, type=_type_color):
+class Color(Seq, length=3, type=_to_rgb):
 
     __slots__ = ()
 
@@ -66,6 +66,12 @@ class Color(Seq, length=3, type=_type_color):
                 )
 
         super().__init__(*args)
+
+    def __int__(self):
+        return (self[0] << 16) + (self[1] << 8) + self[2]
+
+    def __float__(self):
+        return float(int(self))
 
     @property
     def r(self):
@@ -153,9 +159,7 @@ class Color(Seq, length=3, type=_type_color):
 
     @property
     def normalized(self):
-        r, g, b = self
-
-        return (r / 255, g / 255, b / 255)
+        return (self[0] / 255, self[1] / 255, self[2] / 255)
 
     @r.setter
     def r(self, value):
@@ -173,17 +177,13 @@ class Color(Seq, length=3, type=_type_color):
     def cmy(self, value):
         c, m, y = _FloatVector3(value)
 
-        self.r = (1 - c) * 255
-        self.g = (1 - m) * 255
-        self.b = (1 - y) * 255
+        self[:] = ((1 - c) * 255, (1 - m) * 255, (1 - y) * 255)
 
     @cmyk.setter
     def cmyk(self, value):
         c, m, y, k = _FloatVector4(value)
 
-        self.r = (1 - c) * (1 - k) * 255
-        self.g = (1 - m) * (1 - k) * 255
-        self.b = (1 - y) * (1 - k) * 255
+        self[:] = ((1 - c) * (1 - k) * 255, (1 - m) * (1 - k) * 255, (1 - y) * (1 - k) * 255)
 
     @hsv.setter
     def hsv(self, value):
@@ -207,9 +207,7 @@ class Color(Seq, length=3, type=_type_color):
         else:
             r, g, b = c, 0, x
 
-        self.r = (r + m) * 255
-        self.g = (g + m) * 255
-        self.b = (b + m) * 255
+        self[:] = ((r + m) * 255, (g + m) * 255, (b + m) * 255)
 
     @hsl.setter
     def hsl(self, value):
@@ -233,66 +231,62 @@ class Color(Seq, length=3, type=_type_color):
         else:
             r, g, b = c, 0, x
 
-        self.r = (r + m) * 255
-        self.g = (g + m) * 255
-        self.b = (b + m) * 255
+        self[:] = ((r + m) * 255, (g + m) * 255, (b + m) * 255)
 
     @i1i2i3.setter
     def i1i2i3(self, value):
         i1, i2, i3 = _FloatVector3(value)
 
-        self.r = boundary(255, 0, round(i1 + (2/3) * i2 - (1/3) * i3))
-        self.g = boundary(255, 0, round(i1 - (1/3) * i2 + (2/3) * i3))
-        self.b = boundary(255, 0, round(i1 - (2/3) * i2 - (1/3) * i3))
+        self[:] = (
+            boundary(255, 0, round(i1 + (2/3) * i2 - (1/3) * i3)),
+            boundary(255, 0, round(i1 - (1/3) * i2 + (2/3) * i3)),
+            boundary(255, 0, round(i1 - (2/3) * i2 - (1/3) * i3))
+        )
 
     @normalized.setter
     def normalized(self, value):
         r, g, b = _FloatVector3(value)
 
-        self.r = r * 255
-        self.g = g * 255
-        self.b = b * 255
-
-    @classmethod
-    def from_cmy(cls, *object):
-        color = cls()
-        color.cmy = _FloatVector3(*object)
-        return color
-
-    @classmethod
-    def from_cmyk(cls, *object):
-        color = cls()
-        color.cmyk = _FloatVector4(*object)
-        return color
-
-    @classmethod
-    def from_hsv(cls, *object):
-        color = cls()
-        color.hsv = _FloatVector3(*object)
-        return color
-
-    @classmethod
-    def from_hsl(cls, *object):
-        color = cls()
-        color.hsl = _FloatVector3(*object)
-        return color
-
-    @classmethod
-    def from_i1i2i3(cls, *object):
-        color = cls()
-        color.i1i2i3 = _FloatVector3(*object)
-        return color
-
-    @classmethod
-    def from_normalize(cls, *object):
-        color = cls()
-        color.normalized = _FloatVector3(*object)
-        return color
+        self[:] = (r * 255, g * 255, b * 255)
 
     def normalize(self):
         return self.normalized
+
+    def correct_gamma(self, gamma):
+        return Color(
+            round(255 * (self[0] / 255) ** gamma),
+            round(255 * (self[1] / 255) ** gamma),
+            round(255 * (self[2] / 255) ** gamma)
+        )
+
+    def lerp(self, other, t):
+        r1, g1, b1 = self
+        r2, g2, b2 = type(self)(other)
+
+        return Color(
+            round(r1 + (r2 - r1) * t),
+            round(g1 + (g2 - g1) * t),
+            round(b1 + (b2 - b1) * t)
+        )
 
     def grayscale(self):
         r, g, b = self
         gray = round(0.2989 * r + 0.5870 * g + 0.1140 * b)
         return Color(gray, gray, gray)
+
+for name, float_vector in (('cmy', _FloatVector3),
+                           ('cmyk', _FloatVector4),
+                           ('hsv', _FloatVector3),
+                           ('hsl', _FloatVector3),
+                           ('i1i2i3', _FloatVector3),
+                           ('normalized', _FloatVector3)):
+
+    def wrapper(nm, fv):
+        @classmethod
+        def from_color(cls, *object):
+            color = cls()
+            setattr(color, nm, fv(*object))
+            return color
+        return from_color
+
+    setattr(Color, 'from_' + name, wrapper(name, float_vector))
