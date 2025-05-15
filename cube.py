@@ -1,5 +1,11 @@
 import pygtui
-import pygame
+
+try:
+    import pygame
+except ModuleNotFoundError:
+    # pygame belum ada di sistem
+    pygame = None
+
 import keyboard
 import math
 
@@ -54,7 +60,7 @@ def rotate_y(point, angle):
 
 def project(point):
     x, y, z = point
-    z += 5  # hindari pembagian dengan nol
+    z += 5  # menghindari pembagian dengan nol
     f = 85 / z
     x_proj = int(x * f) + 60
     y_proj = int(y * f) + 30
