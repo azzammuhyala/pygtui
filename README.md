@@ -1,18 +1,21 @@
 # pygtui
 Membuat modul PyGame dengan versi Terminal (Text User Interface) <br>
-> Note: modul ini masih dalam proses pengembangan, jadi masih banyak fitur yang belum ada atau masih banyak bug.
+> Catatan: Modul ini masih dalam proses pengembangan, jadi masih banyak fitur yang belum ada atau masih banyak bug.
 
-# Persiapan
-Untuk bisa mengunakan modul ini kamu perlu modul eksternal lain, yaitu `numpy` dan `keyboard` (untuk event input).
+# Pemasangan
+Untuk bisa mengunakan modul ini kamu perlu modul eksternal, yaitu `numpy` dan `keyboard` (untuk event input).
 
-Jalankan saja perintah ini di terminal:
+Jalankan perintah ini di terminal untuk mengunduh modul eksternal yang dibutuhkan:
 ```shell
 pip install numpy keyboard
 ```
 
 Setelah semua modul eksternal sudah terinstall tanpa masalah, unduh folder `pygtui` di repositori ini lalu ekstrak
-file zipnya.
+file zipnya jika file dalam bentuk file zip.
 
+# Uji dan Pemakaian
 Setelah semua itu coba unduh file `cube.py` (perlu juga modul eksternal pygame atau hapus kata kunci `import pygame`)
-dan jalankan file `cube.py`: <br>
+dan jalankan file `cube.py`.<br>
+Hasilnya akan seperti pada cuplikan gambar ini:<br>
 ![Hasil Output `cube.py`](image.png)
+> Catatan: Jalankan `cube.py` ini minimal di ukuran terminal 120x30 agar tampilan tidak rusak.
