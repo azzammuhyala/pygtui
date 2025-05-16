@@ -1,5 +1,6 @@
 import sys
 
+from typing import Callable
 from importlib import import_module
 
 from ._utils import metadata
@@ -24,23 +25,32 @@ class BufferError(Exception):
     __module__ = metadata.MODULE_NAME
 
 def _callshorcut(callname):
+    success = 0
+    fails = 0
+
     for name_module in metadata.MODULES:
         if name_module == 'base':
             continue
 
+        full_module_name = metadata.MODULE_NAME + '.' + name_module
+
+        if full_module_name not in sys.modules:
+            import_module(full_module_name)
+
         try:
-            full_module_name = metadata.MODULE_NAME + '.' + name_module
-
-            if full_module_name not in sys.modules:
-                import_module(full_module_name)
-
-            getattr(sys.modules[full_module_name], callname, None)()
+            func = getattr(sys.modules[full_module_name], callname, None)
+            if isinstance(func, Callable):
+                func()
+                success += 1
         except:
-            pass
+            fails += 1
+
+    metadata.INITIALIZE = callname == 'init'
+
+    return (success, fails)
 
 def init():
-    _callshorcut('init')
-    metadata.INITIALIZE = True
+    return _callshorcut('init')
 
 def quit():
     try:
@@ -48,8 +58,7 @@ def quit():
     except:
         pass
 
-    _callshorcut('quit')
-    metadata.INITIALIZE = False
+    return _callshorcut('quit')
 
 def get_init():
     return metadata.INITIALIZE

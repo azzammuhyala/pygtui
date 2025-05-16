@@ -9,11 +9,28 @@ __all__ = [
     'polygon'
 ]
 
-def rect(surface, color, rect):
+def rect(surface, color, rect, width=0):
     sw, sh = surface.size
-    l, t, w, h = Rect(rect)
+    array = surface._array
+    color = Color(color)
+    x, y, w, h = Rect(rect)
 
-    surface._array[max(t,0):min(t+h,sh), max(l,0):min(l+w,sw)] = Color(color)
+    if width == 0:
+        array[max(y, 0):min(y + h, sh), max(x, 0):min(x + w, sw)] = color
+    else:
+        for i in range(width):
+            # top
+            if y + i < sh:
+                array[y + i, max(x + i, 0):min(x + w - i, sw)] = color
+            # bottom
+            if y + h - 1 - i >= 0 and y + h - 1 - i < sh:
+                array[y + h - 1 - i, max(x + i, 0):min(x + w - i, sw)] = color
+            # left
+            if x + i < sw:
+                array[max(y + i, 0):min(y + h - i, sh), x + i] = color
+            # right
+            if x + w - 1 - i >= 0 and x + w - 1 - i < sw:
+                array[max(y + i, 0):min(y + h - i, sh), x + w - 1 - i] = color
 
 def line(surface, color, start_pos, end_pos, width=1):
     sw, sh = surface.size
@@ -88,6 +105,7 @@ def circle(surface, color, center, radius, width=0):
                     array[py, px] = color
 
 def polygon(surface, color, points, width=0):
+    sw, sh = surface.size
     array = surface._array
     color = Color(color)
     points = [Vector2(point) for point in points]
@@ -117,4 +135,5 @@ def polygon(surface, color, points, width=0):
                 x1 = int(intersections[i])
                 x2 = int(intersections[i + 1])
                 for x in range(x1, x2 + 1):
-                    array[y, x] = color
+                    if 0 <= x < sw and 0 <= y < sh:
+                        array[y, x] = color
